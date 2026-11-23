@@ -7,9 +7,15 @@ import {
 	Loader,
 	Mic,
 	SendHorizonal,
+	ThumbsDown,
+	ThumbsUp,
 	UserRound,
+	Copy,
+	Check,
 } from 'lucide-react';
-import { useContext } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { useContext, useEffect, useRef, useState } from 'react';
+import remarkGfm from 'remark-gfm';
 
 import { ChatContext } from '@/providers';
 
@@ -19,14 +25,41 @@ const Main = () => {
 		setPrompt,
 		recentPrompt,
 		prompt,
+		responseId,
 		isPending,
 		isGenerating,
+		isError,
 		output,
 		showResult,
 	} = useContext(ChatContext);
+	const [vote, setVote] = useState<'like' | 'dislike' | null>(null);
+	const [copied, setCopied] = useState(false);
+	const [copyError, setCopyError] = useState<string | null>(null);
+	const answerRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		setVote(null);
+		setCopied(false);
+		setCopyError(null);
+	}, [responseId]);
 
 	const handleSendPrompt = () => {
 		sendPrompt(prompt);
+	};
+
+	const handleCopy = async () => {
+		try {
+			await navigator.clipboard.writeText(
+				answerRef.current?.innerText ?? output,
+			);
+			setCopied(true);
+			setCopyError(null);
+		} catch (error) {
+			setCopied(false);
+			setCopyError(
+				error instanceof Error ? error.message : 'Could not copy response.',
+			);
+		}
 	};
 
 	return (
@@ -119,20 +152,75 @@ const Main = () => {
 									/>
 
 									<hr
-										className={`mt-1.5 h-5 animate-background-pan rounded-md border-none bg-brand-100 bg-gradient-to-r from-[#9ed7ff] via-[#ffffff] to-[#9ed7ff] [background-size:800px_50px] [animation-delay:200ms] [animation-duration:2s]`}
+										className={`mt-1.5 h-5 animate-background-pan rounded-md border-none bg-brand-100 bg-gradient-to-r from-[#9ed7ff] via-[#ffffff] to-[#9ed7ff] [animation-delay:200ms] [animation-duration:2s] [background-size:800px_50px]`}
 									/>
 
 									<hr
-										className={`mt-1.5 h-5 w-8/12 animate-background-pan rounded-md border-none bg-brand-100 bg-gradient-to-r from-[#9ed7ff] via-[#ffffff] to-[#9ed7ff] [background-size:800px_50px] [animation-delay:300ms] [animation-duration:4s]`}
+										className={`mt-1.5 h-5 w-8/12 animate-background-pan rounded-md border-none bg-brand-100 bg-gradient-to-r from-[#9ed7ff] via-[#ffffff] to-[#9ed7ff] [animation-delay:300ms] [animation-duration:4s] [background-size:800px_50px]`}
 									/>
 								</div>
 							) : (
-								<p
-									className='font-light leading-[1.8]'
-									dangerouslySetInnerHTML={{ __html: output }}
-								/>
+								<div
+									ref={answerRef}
+									key={responseId}
+									className={`markdown-response min-w-0 flex-1 font-light ${
+										isError ? 'text-red-500' : 'answer-animated'
+									}`}
+								>
+									<ReactMarkdown remarkPlugins={[remarkGfm]}>
+										{output}
+									</ReactMarkdown>
+								</div>
 							)}
 						</div>
+
+						{!isPending && !isError && output && (
+							<div className='ml-[3.75rem] mt-3 flex items-center gap-1 text-brand-300'>
+								<button
+									type='button'
+									onClick={() => setVote(vote === 'like' ? null : 'like')}
+									className={`rounded-md p-2 transition-colors hover:bg-brand-100 ${
+										vote === 'like' ? 'bg-brand-100 text-blue-600' : ''
+									}`}
+									aria-label='Like response'
+									aria-pressed={vote === 'like'}
+									title='Like response'
+								>
+									<ThumbsUp size={16} />
+								</button>
+								<button
+									type='button'
+									onClick={() => setVote(vote === 'dislike' ? null : 'dislike')}
+									className={`rounded-md p-2 transition-colors hover:bg-brand-100 ${
+										vote === 'dislike' ? 'bg-brand-100 text-blue-600' : ''
+									}`}
+									aria-label='Dislike response'
+									aria-pressed={vote === 'dislike'}
+									title='Dislike response'
+								>
+									<ThumbsDown size={16} />
+								</button>
+								<button
+									type='button'
+									onClick={handleCopy}
+									className='rounded-md p-2 transition-colors hover:bg-brand-100'
+									aria-label={copied ? 'Response copied' : 'Copy response'}
+									title={copied ? 'Copied' : 'Copy response'}
+								>
+									{copied ? <Check size={16} /> : <Copy size={16} />}
+								</button>
+								{copied && (
+									<span role='status' className='text-xs'>
+										Copied
+									</span>
+								)}
+								{copyError && (
+									<span role='alert' className='text-xs text-red-500'>
+										{copyError}
+									</span>
+								)}
+							</div>
+						)}
 					</div>
 				)}
 

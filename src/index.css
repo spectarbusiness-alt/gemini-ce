@@ -15,8 +15,153 @@
 	}
 }
 
+@layer components {
+	.markdown-response > * {
+		@apply my-4;
+	}
+
+	.markdown-response > :first-child {
+		@apply mt-0;
+	}
+
+	.markdown-response > :last-child {
+		@apply mb-0;
+	}
+
+	.markdown-response h1 {
+		@apply mt-7 text-3xl font-semibold leading-tight;
+	}
+
+	.markdown-response h2 {
+		@apply mt-6 text-2xl font-semibold leading-tight;
+	}
+
+	.markdown-response h3 {
+		@apply mt-5 text-xl font-semibold leading-snug;
+	}
+
+	.markdown-response p {
+		@apply leading-7;
+	}
+
+	.markdown-response ul {
+		@apply list-disc pl-6;
+	}
+
+	.markdown-response ol {
+		@apply list-decimal pl-6;
+	}
+
+	.markdown-response li {
+		@apply my-1 pl-1;
+	}
+
+	.markdown-response blockquote {
+		@apply border-l-4 border-brand-200 pl-4 text-brand-300;
+	}
+
+	.markdown-response pre {
+		@apply overflow-x-auto rounded-lg bg-brand-100 p-4 text-sm;
+	}
+
+	.markdown-response code {
+		@apply rounded bg-brand-100 px-1.5 py-0.5 text-[0.9em];
+	}
+
+	.markdown-response pre code {
+		@apply bg-transparent p-0;
+	}
+
+	.markdown-response a {
+		@apply text-blue-600 underline underline-offset-2;
+	}
+
+	.markdown-response table {
+		@apply block w-full overflow-x-auto text-left;
+	}
+
+	.markdown-response th,
+	.markdown-response td {
+		@apply border border-brand-200 px-3 py-2;
+	}
+
+	.markdown-response th {
+		@apply bg-brand-100 font-semibold;
+	}
+
+	.markdown-response hr {
+		@apply border-brand-200;
+	}
+
+	.answer-animated > * {
+		animation: answer-reveal 420ms ease-out both;
+	}
+
+	.answer-animated > :nth-child(2) {
+		animation-delay: 70ms;
+	}
+
+	.answer-animated > :nth-child(3) {
+		animation-delay: 140ms;
+	}
+
+	.answer-animated > :nth-child(4) {
+		animation-delay: 210ms;
+	}
+
+	.answer-animated > :nth-child(5) {
+		animation-delay: 280ms;
+	}
+
+	.answer-animated > :nth-child(6) {
+		animation-delay: 350ms;
+	}
+
+	.answer-animated > :nth-child(7) {
+		animation-delay: 420ms;
+	}
+
+	.answer-animated ul > li,
+	.answer-animated ol > li {
+		animation: answer-reveal 350ms ease-out both;
+	}
+
+	.answer-animated li:nth-child(2) {
+		animation-delay: 60ms;
+	}
+
+	.answer-animated li:nth-child(3) {
+		animation-delay: 120ms;
+	}
+
+	.answer-animated li:nth-child(4) {
+		animation-delay: 180ms;
+	}
+}
+
+@keyframes answer-reveal {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.answer-animated > *,
+	.answer-animated li {
+		animation-duration: 1ms;
+		animation-delay: 0ms;
+	}
+}
+
 :root {
-	font-family: Outfit, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+	font-family:
+		Outfit, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
 		'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
