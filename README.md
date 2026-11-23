@@ -61,7 +61,13 @@ pnpm install
 
 ## Environment Variables
 
-None. Each visitor brings their own Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey) and enters it in the top bar. The key is stored only in that browser and sent only to Google's API. The app uses the `gemini-3.5-flash-lite` model.
+For local development, add your key to `.env.local` in the project root:
+
+```env
+OPENROUTER_API_KEY=your_openrouter_api_key
+```
+
+The key is read by the server and is not exposed to the browser. Restart the dev server after adding or changing the key. For a Vercel deployment, set `OPENROUTER_API_KEY` in the project's environment variables. The app uses the `google/gemini-2.5-flash` model through OpenRouter.
 
 ## Starting the Development Server
 

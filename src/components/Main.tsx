@@ -9,9 +9,8 @@ import {
 	SendHorizonal,
 	UserRound,
 } from 'lucide-react';
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 
-import { getApiKey, saveApiKey } from '@/libs/gemini';
 import { ChatContext } from '@/providers';
 
 const Main = () => {
@@ -26,8 +25,6 @@ const Main = () => {
 		showResult,
 	} = useContext(ChatContext);
 
-	const [apiKey, setApiKey] = useState(getApiKey);
-
 	const handleSendPrompt = () => {
 		sendPrompt(prompt);
 	};
@@ -38,29 +35,6 @@ const Main = () => {
 				<p className='whitespace-nowrap'>Gemini (CE)</p>
 
 				<div className='flex items-center gap-3'>
-					<input
-						type='password'
-						value={apiKey}
-						onChange={(e) => {
-							setApiKey(e.target.value);
-							saveApiKey(e.target.value);
-						}}
-						placeholder='Your Gemini API key'
-						title='Stored only in this browser'
-						aria-label='Gemini API key'
-						autoComplete='off'
-						className='w-40 rounded-full bg-brand-100 px-4 py-2 text-sm text-black outline-none sm:w-64'
-					/>
-
-					<a
-						href='https://aistudio.google.com/apikey'
-						target='_blank'
-						rel='noreferrer'
-						className='hidden whitespace-nowrap text-sm underline sm:inline'
-					>
-						Get a key
-					</a>
-
 					<div className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-100'>
 						<UserRound className='min-w-4' size={16} />
 					</div>
