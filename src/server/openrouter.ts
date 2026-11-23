@@ -14,7 +14,11 @@ type ChatRequestBody = {
 };
 
 type ValidatedMessages =
-	| { messages: OpenRouterMessage[]; imageCount: number; imageDataLength: number }
+	| {
+		messages: OpenRouterMessage[];
+		imageCount: number;
+		imageDataLength: number;
+	}
 	| { error: string };
 
 const jsonResponse = (body: unknown, status: number) =>
@@ -24,8 +28,14 @@ const jsonResponse = (body: unknown, status: number) =>
 	});
 
 const validateMessages = (value: unknown): ValidatedMessages => {
-	if (!Array.isArray(value) || value.length === 0 || value.length > MAX_MESSAGES) {
-		return { error: `Messages must contain between 1 and ${MAX_MESSAGES} entries.` };
+	if (
+		!Array.isArray(value) ||
+		value.length === 0 ||
+		value.length > MAX_MESSAGES
+	) {
+		return {
+			error: `Messages must contain between 1 and ${MAX_MESSAGES} entries.`,
+		};
 	}
 
 	const messages: OpenRouterMessage[] = [];
@@ -40,7 +50,9 @@ const validateMessages = (value: unknown): ValidatedMessages => {
 			(item.role !== 'user' && item.role !== 'assistant') ||
 			!('content' in item)
 		) {
-			return { error: 'Each message must have a user or assistant role and content.' };
+			return {
+				error: 'Each message must have a user or assistant role and content.',
+			};
 		}
 
 		if (typeof item.content === 'string') {
@@ -77,7 +89,9 @@ const validateMessages = (value: unknown): ValidatedMessages => {
 				!('url' in part.image_url) ||
 				typeof part.image_url.url !== 'string'
 			) {
-				return { error: 'Message content must be text or supported image data.' };
+				return {
+					error: 'Message content must be text or supported image data.',
+				};
 			}
 
 			const imageUrl = part.image_url.url;
@@ -91,10 +105,14 @@ const validateMessages = (value: unknown): ValidatedMessages => {
 			imageCount += 1;
 			imageDataLength += imageUrl.length;
 			if (imageCount > MAX_IMAGES) {
-				return { error: `A conversation request can include up to ${MAX_IMAGES} images.` };
+				return {
+					error: `A conversation request can include up to ${MAX_IMAGES} images.`,
+				};
 			}
 			if (imageDataLength > MAX_IMAGE_DATA_LENGTH) {
-				return { error: 'Attached images are too large. Choose smaller images.' };
+				return {
+					error: 'Attached images are too large. Choose smaller images.',
+				};
 			}
 			content.push({ type: 'image_url', image_url: { url: imageUrl } });
 		}
@@ -104,14 +122,22 @@ const validateMessages = (value: unknown): ValidatedMessages => {
 	return { messages, imageCount, imageDataLength };
 };
 
-export async function handleChatRequest(request: Request, apiKey?: string): Promise<Response> {
+export async function handleChatRequest(
+	request: Request,
+	apiKey?: string,
+): Promise<Response> {
 	if (request.method !== 'POST') {
 		return jsonResponse({ error: { message: 'Method not allowed.' } }, 405);
 	}
 
 	if (!apiKey?.trim()) {
 		return jsonResponse(
-			{ error: { message: 'Set OPENROUTER_API_KEY in the server environment or .env.local.' } },
+			{
+				error: {
+					message:
+						'Set OPENROUTER_API_KEY in the server environment or .env.local.',
+				},
+			},
 			500,
 		);
 	}
@@ -120,55 +146,16 @@ export async function handleChatRequest(request: Request, apiKey?: string): Prom
 	try {
 		body = (await request.json()) as { prompt?: unknown };
 	} catch {
-		return jsonResponse({ error: { message: 'Request body must be valid JSON.' } }, 400);
-	}
-
-	const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
-	if (body.prompt !== undefined && typeof body.prompt !== 'string') {
-		return jsonResponse({ error: { message: 'Prompt must be a string.' } }, 400);
-	}
-
-	if (body.images !== undefined && !Array.isArray(body.images)) {
-		return jsonResponse({ error: { message: 'Images must be an array.' } }, 400);
-	}
-
-	const images = (body.images ?? []) as unknown[];
-	if (images.length > MAX_IMAGES) {
 		return jsonResponse(
-			{ error: { message: `You can attach up to ${MAX_IMAGES} images per message.` } },
+			{ error: { message: 'Request body must be valid JSON.' } },
 			400,
 		);
 	}
 
-	let totalImageDataLength = 0;
-	const imageParts: { type: 'image_url'; image_url: { url: string } }[] = [];
-	for (const image of images) {
-		if (typeof image !== 'string') {
-			return jsonResponse({ error: { message: 'Each image must be a data URL.' } }, 400);
-		}
-		const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(
-			image,
-		);
-		if (!match || !ALLOWED_IMAGE_TYPES.has(match[1])) {
-			return jsonResponse(
-				{ error: { message: 'Use JPEG, PNG, or WebP images only.' } },
-				400,
-			);
-		}
-
-		totalImageDataLength += image.length;
-		if (totalImageDataLength > MAX_IMAGE_DATA_LENGTH) {
-			return jsonResponse(
-				{ error: { message: 'Attached images are too large. Choose smaller images.' } },
-				413,
-			);
-		}
-		imageParts.push({ type: 'image_url', image_url: { url: image } });
-	}
-
-	if (!prompt && imageParts.length === 0) {
+	const prompt = typeof body.prompt === 'string' ? body.prompt.trim() : '';
+	if (body.prompt !== undefined && typeof body.prompt !== 'string') {
 		return jsonResponse(
-			{ error: { message: 'Enter a prompt or attach at least one image.' } },
+			{ error: { message: 'Prompt must be a string.' } },
 			400,
 		);
 	}
@@ -181,11 +168,74 @@ export async function handleChatRequest(request: Request, apiKey?: string): Prom
 		}
 		messages = validated.messages;
 	} else {
+		if (body.images !== undefined && !Array.isArray(body.images)) {
+			return jsonResponse(
+				{ error: { message: 'Images must be an array.' } },
+				400,
+			);
+		}
+
+		const images = (body.images ?? []) as unknown[];
+		if (images.length > MAX_IMAGES) {
+			return jsonResponse(
+				{
+					error: {
+						message: `You can attach up to ${MAX_IMAGES} images per message.`,
+					},
+				},
+				400,
+			);
+		}
+
+		let totalImageDataLength = 0;
+		const imageParts: { type: 'image_url'; image_url: { url: string } }[] = [];
+		for (const image of images) {
+			if (typeof image !== 'string') {
+				return jsonResponse(
+					{ error: { message: 'Each image must be a data URL.' } },
+					400,
+				);
+			}
+			const match =
+				/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(
+					image,
+				);
+			if (!match || !ALLOWED_IMAGE_TYPES.has(match[1])) {
+				return jsonResponse(
+					{ error: { message: 'Use JPEG, PNG, or WebP images only.' } },
+					400,
+				);
+			}
+
+			totalImageDataLength += image.length;
+			if (totalImageDataLength > MAX_IMAGE_DATA_LENGTH) {
+				return jsonResponse(
+					{
+						error: {
+							message: 'Attached images are too large. Choose smaller images.',
+						},
+					},
+					413,
+				);
+			}
+			imageParts.push({ type: 'image_url', image_url: { url: image } });
+		}
+
+		if (!prompt && imageParts.length === 0) {
+			return jsonResponse(
+				{ error: { message: 'Enter a prompt or attach at least one image.' } },
+				400,
+			);
+		}
+
 		messages = [
 			{
 				role: 'user',
 				content: [
-					{ type: 'text', text: prompt || 'Describe and analyze the attached image.' },
+					{
+						type: 'text',
+						text: prompt || 'Describe and analyze the attached image.',
+					},
 					...imageParts,
 				],
 			},
@@ -193,28 +243,35 @@ export async function handleChatRequest(request: Request, apiKey?: string): Prom
 	}
 
 	try {
-		const upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				Authorization: `Bearer ${apiKey.trim()}`,
+		const upstream = await fetch(
+			'https://openrouter.ai/api/v1/chat/completions',
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${apiKey.trim()}`,
+				},
+				body: JSON.stringify({
+					model: MODEL,
+					messages,
+					temperature: 0.9,
+					max_tokens: MAX_TOKENS,
+				}),
 			},
-			body: JSON.stringify({
-				model: MODEL,
-				messages,
-				temperature: 0.9,
-				max_tokens: MAX_TOKENS,
-			}),
-		});
+		);
 		const responseBody = await upstream.text();
 
 		return new Response(responseBody, {
 			status: upstream.status,
 			headers: {
-				'Content-Type': upstream.headers.get('Content-Type') ?? 'application/json',
+				'Content-Type':
+					upstream.headers.get('Content-Type') ?? 'application/json',
 			},
 		});
 	} catch {
-		return jsonResponse({ error: { message: 'Unable to reach OpenRouter.' } }, 502);
+		return jsonResponse(
+			{ error: { message: 'Unable to reach OpenRouter.' } },
+			502,
+		);
 	}
 }

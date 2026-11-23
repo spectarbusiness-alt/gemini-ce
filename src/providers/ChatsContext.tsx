@@ -1,9 +1,6 @@
 import { useState } from 'react';
 
-import type {
-	ChatTurn,
-	OpenRouterMessage,
-} from '@/libs/chatTypes';
+import type { ChatTurn, OpenRouterMessage } from '@/libs/chatTypes';
 import { runChat } from '@/libs/gemini';
 import { ChatContext } from './ChatContext';
 
@@ -30,9 +27,13 @@ export const ChatContextProvider = ({ children }: React.PropsWithChildren) => {
 	};
 
 	const handleSendPrompt = async (prompt: string, images: string[] = []) => {
-		const completedTurns = output && !isError
-			? [...turns, { prompt: recentPrompt, images: recentImages, response: output }]
-			: turns;
+		const completedTurns =
+			output && !isError
+				? [
+						...turns,
+						{ prompt: recentPrompt, images: recentImages, response: output },
+					]
+				: turns;
 		const history: OpenRouterMessage[] = completedTurns.flatMap((turn) => {
 			const content: OpenRouterMessage['content'] = turn.images.length
 				? [
@@ -62,11 +63,15 @@ export const ChatContextProvider = ({ children }: React.PropsWithChildren) => {
 			{ role: 'user' as const, content: currentContent },
 		];
 		let remainingImages = images.length;
-		let remainingImageDataLength = images.reduce((total, image) => total + image.length, 0);
+		let remainingImageDataLength = images.reduce(
+			(total, image) => total + image.length,
+			0,
+		);
 
 		for (let index = messages.length - 2; index >= 0; index--) {
 			const message = messages[index];
-			if (message.role !== 'user' || typeof message.content === 'string') continue;
+			if (message.role !== 'user' || typeof message.content === 'string')
+				continue;
 
 			const content = message.content.filter((part) => {
 				if (part.type !== 'image_url') return true;
@@ -87,14 +92,16 @@ export const ChatContextProvider = ({ children }: React.PropsWithChildren) => {
 		setIsGenerating(true);
 		setIsPending(true);
 		setIsError(false);
-		setRecentPrompt(prompt.trim() || (images.length ? 'Analyze this image.' : ''));
+		setRecentPrompt(
+			prompt.trim() || (images.length ? 'Analyze this image.' : ''),
+		);
 		setRecentImages(images);
 		setShowResult(true);
 
 		setPrevPrompts((prev) => [...prev.filter((p) => p !== prompt), prompt]);
 
 		setTurns(completedTurns);
-		const { data, error } = await runChat(prompt, images, messages);
+		const { data, error } = await runChat(messages);
 
 		if (error) {
 			setOutput(error);
