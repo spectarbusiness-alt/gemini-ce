@@ -1,14 +1,20 @@
+import type { OpenRouterMessage } from './chatTypes';
+
 type OpenRouterResponse = {
 	choices?: { message?: { content?: string } }[];
 	error?: { message?: string };
 };
 
-export async function runChat(prompt: string): Promise<{ data?: string; error?: string }> {
+export async function runChat(
+	prompt: string,
+	images: string[] = [],
+	history: OpenRouterMessage[] = [],
+): Promise<{ data?: string; error?: string }> {
 	try {
 		const res = await fetch('/api/chat', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ prompt }),
+			body: JSON.stringify({ prompt, images, messages: history }),
 		});
 		const json = (await res.json()) as OpenRouterResponse;
 

@@ -1,7 +1,7 @@
 import { CircleHelp, History, Menu, Plus, Settings } from 'lucide-react';
 import { useContext, useState } from 'react';
 
-import { ChatContext } from '@/providers';
+import { ChatContext } from '@/providers/ChatContext';
 
 import RecentChatItem from './RecentChatItem';
 import SidebarMenuItem from './SidebarMenuItem';
