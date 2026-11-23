@@ -1,10 +1,10 @@
 import react from '@vitejs/plugin-react-swc';
 import { resolve } from 'path';
-import { defineConfig, loadEnv, type Plugin } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 
 import { handleChatRequest } from './src/server/openrouter';
 
-const openRouterDevApi = (apiKey: string): Plugin => ({
+const openRouterDevApi = (): Plugin => ({
 	name: 'openrouter-dev-api',
 	configureServer(server) {
 		server.middlewares.use('/api/chat', async (req, res) => {
@@ -16,10 +16,15 @@ const openRouterDevApi = (apiKey: string): Plugin => ({
 
 				const request = new Request('http://localhost/api/chat', {
 					method: req.method,
-					headers: { 'Content-Type': req.headers['content-type'] ?? 'application/json' },
+					headers: {
+						'Content-Type': req.headers['content-type'] ?? 'application/json',
+						...(typeof req.headers['x-openrouter-api-key'] === 'string'
+							? { 'X-OpenRouter-API-Key': req.headers['x-openrouter-api-key'] }
+							: {}),
+					},
 					body: Buffer.concat(chunks).toString('utf8'),
 				});
-				const response = await handleChatRequest(request, apiKey);
+				const response = await handleChatRequest(request);
 
 				res.statusCode = response.status;
 				response.headers.forEach((value, name) => res.setHeader(name, value));
@@ -34,15 +39,11 @@ const openRouterDevApi = (apiKey: string): Plugin => ({
 	},
 });
 
-export default defineConfig(({ mode }) => {
-	const env = loadEnv(mode, process.cwd(), '');
-
-	return {
-		plugins: [react(), openRouterDevApi(env.OPENROUTER_API_KEY)],
-		resolve: {
-			alias: {
-				'@': resolve(__dirname, 'src'),
-			},
+export default defineConfig(() => ({
+	plugins: [react(), openRouterDevApi()],
+	resolve: {
+		alias: {
+			'@': resolve(__dirname, 'src'),
 		},
-	};
-});
+	},
+}));

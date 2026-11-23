@@ -28,8 +28,12 @@ export default async function handler(
 			method === 'GET' || method === 'HEAD'
 				? undefined
 				: await readBody(request);
+		const apiKey = request.headers['x-openrouter-api-key'];
 		const headers = {
 			'Content-Type': request.headers['content-type'] ?? 'application/json',
+			...(typeof apiKey === 'string'
+				? { 'X-OpenRouter-API-Key': apiKey }
+				: {}),
 		};
 
 		const apiRequest = new Request(
@@ -39,10 +43,7 @@ export default async function handler(
 			),
 			{ method, headers, body },
 		);
-		const apiResponse = await handleChatRequest(
-			apiRequest,
-			process.env.OPENROUTER_API_KEY,
-		);
+		const apiResponse = await handleChatRequest(apiRequest);
 
 		response.statusCode = apiResponse.status;
 		apiResponse.headers.forEach((value, name) =>

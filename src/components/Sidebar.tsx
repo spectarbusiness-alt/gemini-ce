@@ -13,6 +13,7 @@ const Sidebar = () => {
 		startNewChat,
 		prevPrompts,
 		isGenerating,
+		openSettings,
 	} = useContext(ChatContext);
 
 	const [isExpanded, setIsExpanded] = useState(true);
@@ -76,13 +77,14 @@ const Sidebar = () => {
 				{[
 					{ label: 'Activity', icon: History },
 					{ label: 'Help', icon: CircleHelp },
-					{ label: 'Settings', icon: Settings },
-				].map(({ label, icon }, idx) => (
+					{ label: 'Settings', icon: Settings, onClick: openSettings },
+				].map(({ label, icon, onClick }, idx) => (
 					<SidebarMenuItem
 						key={idx}
 						Icon={icon}
 						label={label}
 						isExpanded={isExpanded}
+						onClick={onClick}
 					/>
 				))}
 			</div>

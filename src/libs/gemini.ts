@@ -7,11 +7,15 @@ type OpenRouterResponse = {
 
 export async function runChat(
 	messages: OpenRouterMessage[],
+	apiKey: string,
 ): Promise<{ data?: string; error?: string }> {
 	try {
 		const res = await fetch('/api/chat', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: {
+				'Content-Type': 'application/json',
+				'X-OpenRouter-API-Key': apiKey,
+			},
 			body: JSON.stringify({ messages }),
 		});
 		const body = await res.text();
@@ -20,7 +24,7 @@ export async function runChat(
 			json = JSON.parse(body) as OpenRouterResponse;
 		} catch {
 			return {
-				error: `The chat service returned an invalid response (HTTP ${res.status}). Check the Vercel function logs and confirm OPENROUTER_API_KEY is configured.`,
+				error: `The chat service returned an invalid response (HTTP ${res.status}). Check the /api/chat function logs.`,
 			};
 		}
 

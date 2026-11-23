@@ -124,21 +124,20 @@ const validateMessages = (value: unknown): ValidatedMessages => {
 
 export async function handleChatRequest(
 	request: Request,
-	apiKey?: string,
 ): Promise<Response> {
 	if (request.method !== 'POST') {
 		return jsonResponse({ error: { message: 'Method not allowed.' } }, 405);
 	}
 
+	const apiKey = request.headers.get('X-OpenRouter-API-Key');
 	if (!apiKey?.trim()) {
 		return jsonResponse(
 			{
 				error: {
-					message:
-						'Set OPENROUTER_API_KEY in the server environment or .env.local.',
+					message: 'Add your OpenRouter API key in Settings before chatting.',
 				},
 			},
-			500,
+			400,
 		);
 	}
 

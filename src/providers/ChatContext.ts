@@ -4,6 +4,12 @@ import type { ChatTurn } from '@/libs/chatTypes';
 
 type ChatContextProps = {
 	sendPrompt: (prompt: string, images?: string[]) => Promise<void>;
+	apiKey: string;
+	saveApiKey: (apiKey: string) => void;
+	storageError: string;
+	isSettingsOpen: boolean;
+	openSettings: () => void;
+	closeSettings: () => void;
 	setPrevPrompts: React.Dispatch<React.SetStateAction<string[]>>;
 	setRecentPrompt: React.Dispatch<React.SetStateAction<string>>;
 	setPrompt: React.Dispatch<React.SetStateAction<string>>;
@@ -23,6 +29,12 @@ type ChatContextProps = {
 
 export const ChatContext = createContext<ChatContextProps>({
 	sendPrompt: async () => {},
+	apiKey: '',
+	saveApiKey: () => {},
+	storageError: '',
+	isSettingsOpen: false,
+	openSettings: () => {},
+	closeSettings: () => {},
 	setPrevPrompts: () => {},
 	setRecentPrompt: () => {},
 	setPrompt: () => {},

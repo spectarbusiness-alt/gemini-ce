@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { ChatTurn, OpenRouterMessage } from '@/libs/chatTypes';
 import { runChat } from '@/libs/gemini';
 import { ChatContext } from './ChatContext';
 
 export const ChatContextProvider = ({ children }: React.PropsWithChildren) => {
+	const [apiKey, setApiKey] = useState('');
+	const [storageError, setStorageError] = useState('');
+	const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 	const [prevPrompts, setPrevPrompts] = useState<string[]>([]);
 	const [recentPrompt, setRecentPrompt] = useState<string>('');
 	const [prompt, setPrompt] = useState<string>('');
@@ -16,6 +19,27 @@ export const ChatContextProvider = ({ children }: React.PropsWithChildren) => {
 	const [isError, setIsError] = useState<boolean>(false);
 	const [output, setOutput] = useState<string>('');
 	const [showResult, setShowResult] = useState<boolean>(false);
+
+	useEffect(() => {
+		try {
+			setApiKey(window.localStorage.getItem('openrouter-api-key') ?? '');
+		} catch {
+			setStorageError('Could not read the API key from this browser storage.');
+		}
+	}, []);
+
+	const saveApiKey = useCallback((value: string) => {
+		try {
+			if (value) window.localStorage.setItem('openrouter-api-key', value);
+			else window.localStorage.removeItem('openrouter-api-key');
+			setApiKey(value);
+			setStorageError('');
+		} catch {
+			throw new Error('Could not save the API key in this browser storage.');
+		}
+	}, []);
+	const openSettings = useCallback(() => setIsSettingsOpen(true), []);
+	const closeSettings = useCallback(() => setIsSettingsOpen(false), []);
 
 	const handleNewChat = () => {
 		setTurns([]);
@@ -101,7 +125,7 @@ export const ChatContextProvider = ({ children }: React.PropsWithChildren) => {
 		setPrevPrompts((prev) => [...prev.filter((p) => p !== prompt), prompt]);
 
 		setTurns(completedTurns);
-		const { data, error } = await runChat(messages);
+		const { data, error } = await runChat(messages, apiKey);
 
 		if (error) {
 			setOutput(error);
@@ -123,6 +147,12 @@ export const ChatContextProvider = ({ children }: React.PropsWithChildren) => {
 		<ChatContext.Provider
 			value={{
 				sendPrompt: handleSendPrompt,
+				apiKey,
+				saveApiKey,
+				storageError,
+				isSettingsOpen,
+				openSettings,
+				closeSettings,
 				setPrevPrompts,
 				setRecentPrompt,
 				setPrompt,

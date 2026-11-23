@@ -48,6 +48,7 @@ const Main = () => {
 		isError,
 		output,
 		showResult,
+		openSettings,
 	} = useContext(ChatContext);
 	const [vote, setVote] = useState<'like' | 'dislike' | null>(null);
 	const [copied, setCopied] = useState(false);
@@ -211,9 +212,15 @@ const Main = () => {
 				<p className='whitespace-nowrap'>Gemini (CE)</p>
 
 				<div className='flex items-center gap-3'>
-					<div className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-100'>
+					<button
+						type='button'
+						onClick={openSettings}
+						className='grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-100'
+						aria-label='Open settings'
+						title='Settings'
+					>
 						<UserRound className='min-w-4' size={16} />
-					</div>
+					</button>
 				</div>
 			</nav>
 
