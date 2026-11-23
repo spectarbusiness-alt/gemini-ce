@@ -67,7 +67,9 @@ For local development, add your key to `.env.local` in the project root:
 OPENROUTER_API_KEY=your_openrouter_api_key
 ```
 
-The key is read by the server and is not exposed to the browser. Restart the dev server after adding or changing the key. For a Vercel deployment, set `OPENROUTER_API_KEY` in the project's environment variables. The app uses the `google/gemini-2.5-flash` model through OpenRouter.
+You can copy `.env.example` to `.env.local` and replace the value with your key. The key is read by the server and is not exposed to the browser. Restart the dev server after adding or changing the key.
+
+For Vercel, open your project’s **Settings → Environment Variables**, add `OPENROUTER_API_KEY` with your own OpenRouter key, select the environments you deploy to, and redeploy. Do not commit your key or put it in frontend code. If chat still fails, inspect the failed `/api/chat` invocation in the Vercel function logs. The app uses the `google/gemini-2.5-flash` model through OpenRouter.
 
 ## Starting the Development Server
 
